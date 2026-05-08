@@ -1,0 +1,177 @@
+<section class="oe_container">
+  <div class="oe_row oe_spaced">
+    <h2 class="oe_slogan">Iscanet - FatturaPA ZIP Import</h2>
+    <h3 class="oe_slogan">
+      Drop a ZIP, get one Customer Invoice or Vendor Bill per inner XML &mdash; no extra
+      menu, no extra wizard.
+    </h3>
+    <div class="oe_span12">
+      <p class="oe_mt32">
+        Italian e-invoices arrive in batches: from the Sistema di Interscambio (SDI),
+        from intermediaries, from accounting portals, almost always packaged as a single
+        <code>.zip</code> archive. Odoo&nbsp;18 natively imports a bare FatturaPA
+        <code>.xml</code> through <em>l10n_it_edi</em>, but if you upload the ZIP that
+        wraps them, you only get a single empty draft invoice with the archive attached.
+        This module fills that gap.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container oe_dark">
+  <div class="oe_row">
+    <h2 class="oe_slogan">One click, many invoices</h2>
+    <div class="oe_span6">
+      <p class="oe_mt32">
+        Use the very same <strong>Upload</strong> button you already know on Customer
+        Invoices, Vendor Bills, and the journal dashboards. If the file you drop happens
+        to be a ZIP, this module transparently opens it, pulls each FatturaPA
+        <code>.xml</code> (or signed <code>.xml.p7m</code>) out, and feeds them one by
+        one to the standard Odoo importer.
+      </p>
+      <p>
+        You end up with one draft <em>account.move</em> per inner document, ready to be
+        reviewed and posted.
+      </p>
+    </div>
+    <div class="oe_span6">
+      <p class="oe_mt32">
+        <strong>Before</strong>: 1 ZIP &rarr; 1 blank invoice with the ZIP attached.
+      </p>
+      <p>
+        <strong>After</strong>: 1 ZIP &rarr; <em>N</em> properly decoded invoices or
+        bills, partner / lines / taxes / dates already filled in by
+        <em>l10n_it_edi</em>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container">
+  <div class="oe_row">
+    <h2 class="oe_slogan">Customer invoice or vendor bill? The XML decides.</h2>
+    <div class="oe_span6">
+      <p class="oe_mt32">
+        For each XML inside the archive, the direction is detected from the document
+        itself by matching your company's VAT or Codice Fiscale against the
+        <code>CedentePrestatore</code> (seller) and
+        <code>CessionarioCommittente</code> (buyer) sections.
+      </p>
+      <p>
+        A single ZIP may legitimately mix both directions: each move is automatically
+        routed to a journal whose type (<em>sale</em> or <em>purchase</em>) matches the
+        detected direction, regardless of which journal you clicked
+        <strong>Upload</strong> from.
+      </p>
+    </div>
+    <div class="oe_span6">
+      <p class="oe_mt32">
+        The detection uses the same logic as the native
+        <em>l10n_it_edi</em> import &mdash; no parallel parsing pipeline, no risk of
+        drift between this module and the official Italian EDI implementation.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container oe_dark">
+  <div class="oe_row">
+    <h2 class="oe_slogan">Real-world archives, handled</h2>
+    <div class="oe_span6">
+      <p class="oe_mt32">
+        <strong>Signed envelopes (P7M).</strong>
+        CAdES-signed <code>.xml.p7m</code> files are unwrapped on the fly using
+        <em>l10n_it_edi</em>'s built-in signature stripper.
+      </p>
+      <p>
+        <strong>Nested ZIPs.</strong>
+        A ZIP-of-ZIPs (the typical SDI batch shape) is recursively expanded; you do not
+        need to flatten it manually.
+      </p>
+    </div>
+    <div class="oe_span6">
+      <p class="oe_mt32">
+        <strong>Mixed contents.</strong>
+        READMEs, <code>.DS_Store</code>, directory entries and anything that is not an
+        <code>.xml</code> or <code>.p7m</code> are silently skipped.
+      </p>
+      <p>
+        <strong>Per-file resilience.</strong>
+        One malformed XML inside a batch does not abort the rest: each entry is imported
+        in its own savepoint, exactly as on a stock Odoo single-file upload.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container">
+  <div class="oe_row">
+    <h2 class="oe_slogan">Defensive by default</h2>
+    <div class="oe_span6">
+      <p class="oe_mt32">
+        Built-in tripwires against malicious or accidentally huge payloads:
+      </p>
+      <ul>
+        <li>at most <strong>1&nbsp;000</strong> entries per archive</li>
+        <li>at most <strong>200&nbsp;MB</strong> total uncompressed size</li>
+        <li>at most <strong>5</strong> levels of ZIP nesting</li>
+      </ul>
+      <p>
+        Exceeding any of these caps stops the import with a clear user-facing error,
+        before anything is written to the database.
+      </p>
+    </div>
+    <div class="oe_span6">
+      <p class="oe_mt32">
+        The thresholds are exposed as module-level constants in
+        <code>models/account_journal.py</code>; raise them in a downstream module if
+        your batches really are that large.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container oe_dark">
+  <div class="oe_row">
+    <h2 class="oe_slogan">Drop-in with <em>l10n_it_edi</em></h2>
+    <div class="oe_span6">
+      <p class="oe_mt32">
+        <strong>No new menu.</strong>
+        The override hooks into
+        <code>account.journal._create_document_from_attachment</code>: bare XMLs
+        continue through the native flow unchanged, only ZIP-shaped uploads trigger the
+        explosion logic.
+      </p>
+    </div>
+    <div class="oe_span6">
+      <p class="oe_mt32">
+        <strong>No data model changes.</strong>
+        There are no new tables, no new wizards, no new menu items. Uninstalling the
+        module returns Odoo to its standard behavior with zero residue.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container">
+  <div class="oe_row">
+    <h2 class="oe_slogan">Tech &amp; credits</h2>
+    <div class="oe_span12">
+      <p class="oe_mt32">
+        <strong>Compatibility:</strong> Odoo&nbsp;18.0 &middot;
+        <strong>Dependencies:</strong>
+        <code>account</code>, <code>l10n_it_edi</code> &middot;
+        <strong>License:</strong> Apache 2.0
+      </p>
+      <p>
+        <strong>Author:</strong>
+        Rocco Lucia, Iscanet Internet Services S.r.l.
+      </p>
+      <p>
+        Inspired by the Odoo&nbsp;16 OCA module
+        <em>l10n_it_fatturapa_import_zip</em> (TAKOBI / OCA), re-implemented from
+        scratch on top of Odoo&nbsp;18's native <em>l10n_it_edi</em> import pipeline.
+      </p>
+    </div>
+  </div>
+</section>

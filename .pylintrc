@@ -1,0 +1,105 @@
+# pylint configuration for the Iscanet FatturaPA ZIP Import module.
+#
+# We use pylint_odoo for the Odoo-specific checks. Generic pylint messages
+# stay disabled (`disable=all`) and only Odoo-relevant rules are explicitly
+# enabled. Checks are organised by intent rather than alphabetically so the
+# "why this check is here" stays obvious; legacy v7/v8 checks (api-one,
+# openerp-exception, old-api7) are intentionally absent — Odoo 18 modules
+# can't trigger them.
+#
+# Single-config layout: there's no `.pylintrc-mandatory` companion because
+# the module is small enough that the optional/blocking distinction is not
+# worth the duplication.
+
+[MASTER]
+load-plugins=pylint_odoo
+score=n
+
+[ODOOLINT]
+manifest-required-keys=license
+manifest-deprecated-keys=description,active
+manifest-required-authors=Iscanet Internet Services S.r.l.
+license-allowed=Apache-2.0,Other OSI approved licence,LGPL-3,AGPL-3,GPL-3,GPL-3 or any later version
+valid-odoo-versions=18.0
+
+[MESSAGES CONTROL]
+disable=all
+
+enable=
+    # ---- Manifest hygiene ----
+    manifest-author-string,
+    manifest-deprecated-key,
+    manifest-required-author,
+    manifest-required-key,
+    manifest-version-format,
+    license-allowed,
+    development-status-allowed,
+    website-manifest-key-not-valid-uri,
+
+    # ---- Docs / readme / translations ----
+    missing-readme,
+    missing-newline-extrafiles,
+    rst-syntax-error,
+    translation-field,
+    translation-required,
+    translation-contains-variable,
+    translation-positional-used,
+    po-msgstr-variables,
+    po-syntax-error,
+    duplicate-po-message-definition,
+
+    # ---- Python correctness in an Odoo context ----
+    method-compute,
+    method-inverse,
+    method-search,
+    method-required-super,
+    sql-injection,
+    eval-used,
+    eval-referenced,
+    print-used,
+    dangerous-default-value,
+    except-pass,
+    pointless-statement,
+    pointless-string-statement,
+    redundant-keyword-arg,
+    reimported,
+    return-in-init,
+    too-few-format-args,
+    unreachable,
+    anomalous-backslash-in-string,
+    str-format-used,
+    external-request-timeout,
+
+    # ---- XML hygiene ----
+    xml-syntax-error,
+    xml-attribute-translatable,
+    xml-deprecated-qweb-directive,
+    xml-deprecated-tree-attribute,
+    duplicate-id-csv,
+    duplicate-xml-fields,
+    duplicate-xml-record-id,
+    redundant-modulename-xml,
+    dangerous-view-replace-wo-priority,
+    dangerous-qweb-replace-wo-priority,
+    deprecated-data-xml-node,
+    character-not-valid-in-resource-link,
+    resource-not-exist,
+
+    # ---- Odoo conventions ----
+    attribute-deprecated,
+    attribute-string-redundant,
+    class-camelcase,
+    context-overridden,
+    relative-import,
+    odoo-addons-relative-import,
+    test-folder-imported,
+    file-not-used,
+    incoherent-interpreter-exec-perm,
+    wrong-tabs-instead-of-spaces,
+    use-vim-comment,
+    duplicate-key
+
+[REPORTS]
+msg-template={path}:{line}: [{msg_id}({symbol}), {obj}] {msg}
+output-format=colorized
+reports=no
